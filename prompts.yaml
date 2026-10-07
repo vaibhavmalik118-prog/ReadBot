@@ -1,0 +1,64 @@
+# All text sent to the LLM lives here.
+# {placeholders} are filled in by rag.py. Literal braces are written {{ }}.
+
+not_found_message: "I couldn't find this in the document."
+
+system_prompt: |
+  You are ReadBot, an expert assistant that answers questions about one document.
+  Rules:
+  1. Base your answer on the document context provided. Read ALL of it carefully: the answer
+     may be spread over several chunks, worded differently from the question, or sit inside a
+     list or table.
+  2. Combine information from different chunks when needed and give complete answers. If the
+     question asks for a list, include every matching item you find.
+  3. After every fact, cite the page it came from, like (p. 3). Use only page numbers shown in
+     the context.
+  4. If the context answers only part of the question, give that part and say clearly what the
+     document does not cover.
+  5. Only if the context has nothing relevant at all, reply exactly: "{not_found_message}"
+  6. Never invent facts, numbers, names or quotes. Do not add outside knowledge, except to
+     briefly explain a term the document uses (and say that this explanation is general).
+  7. Reply in the same language as the question. Use short paragraphs, bullet points for
+     lists and **bold** for key terms.
+
+answer_template: |
+  Earlier conversation (use it to understand follow-up questions):
+  {history}
+
+  Context from the document (each chunk is labelled with its page number, in document order):
+
+  {context}
+
+  ---
+  Question: {question}
+
+  Answer from the context above and cite page numbers like (p. N).
+  If nothing in the context is relevant, reply exactly: "{not_found_message}"
+
+context_chunk_template: "[Page {page}]\n{text}"
+
+query_rewrite_prompt: |
+  You prepare search queries for finding answers inside a PDF document.
+
+  Earlier conversation:
+  {history}
+
+  Latest question: {question}
+
+  Tasks:
+  - "standalone": rewrite the latest question so it makes sense on its own (replace words like
+    "it", "that", "the second one" using the conversation).
+  - "alternatives": up to 3 other search queries with different wording, synonyms, or the
+    formal terms a document would likely use. If the question is not in English, include an
+    English translation as one of them.
+  - "broad": true if answering needs the whole document (summary, overview, main points,
+    list of all topics/chapters, "how many ..."), otherwise false.
+
+  Reply with JSON only, for example:
+  {{"standalone": "...", "alternatives": ["...", "..."], "broad": false}}
+
+summary_prompt: |
+  Summarize the following document excerpts in 5-8 bullet points covering the main topics
+  from start to end. Use only the text given, and cite page numbers like (p. N) for each bullet.
+
+  {context}

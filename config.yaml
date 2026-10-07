@@ -1,0 +1,39 @@
+# ReadBot settings. Change values here, not in the code.
+
+llm:
+  provider: groq
+  model: openai/gpt-oss-120b       # any chat model available on your Groq account
+  helper_model: openai/gpt-oss-20b # small, fast model that rewrites questions into search queries
+  reasoning_effort: medium         # low / medium / high: how hard the model thinks (gpt-oss only)
+  temperature: 0.1                 # low = more factual, less creative
+  max_tokens: 1800                 # max length of the answer (reasoning models count thinking here too)
+  timeout_seconds: 60              # give up on a single API call after this long
+  max_retries: 3                   # how many times to retry a failed call
+  backoff_seconds: 2               # wait 2s, 4s, 8s ... between retries
+
+chunking:
+  chunk_size: 800                  # target characters per chunk
+  chunk_overlap: 150               # characters shared between neighbouring chunks
+  min_chunk_chars: 40              # drop tiny fragments (headers, page numbers)
+
+embeddings:
+  model: intfloat/multilingual-e5-small   # understands English, Hindi and ~100 languages
+  query_prefix: "query: "                 # e5 models expect these prefixes
+  passage_prefix: "passage: "
+  batch_size: 32
+  cache_dir: .cache/embeddings     # saved embeddings, so the same PDF is not re-embedded
+
+retrieval:
+  top_k: 8                         # best-matching chunks to build the context around
+  candidates: 30                   # chunks each search method ranks before results are merged
+  keyword_weight: 0.8              # weight of keyword (BM25) search vs meaning search (1.0)
+  rrf_k: 60                        # reciprocal-rank-fusion constant
+  neighbor_chunks: 1               # also include chunks right before/after each match
+  max_context_chars: 12000         # document text sent per question (fits Groq free limits)
+  chunk_size_hint: 800             # used to estimate how many chunks fit in the budget
+  query_expansion: true            # rewrite each question into several search queries
+  history_turns: 3                 # earlier Q&A turns used for follow-up questions
+
+app:
+  title: ReadBot - Document Q&A
+  max_upload_mb: 20
